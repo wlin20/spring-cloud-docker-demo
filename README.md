@@ -165,10 +165,18 @@ null: null
 
 5.在docker-compose.yml所在目录，运行docker-compose up 或 docker-compose up -d 命令启动所有容器
 ```
-#: docker-compose up -d 
+[root@server temp]# docker-compose up -d 
 Starting temp_eurekaServer_1 ... done
 Starting temp_hello-service_1 ... done
 Starting temp_config-server_1 ... done
 Starting temp_hello-client_1  ... done
+
+[root@server temp]# docker ps
+CONTAINER ID        IMAGE                                                 COMMAND                  CREATED             STATUS              PORTS                    NAMES
+0885ce551787        10.20.26.230:5000/wlin/hello-client:0.0.1-SNAPSHOT    "/bin/sh /wait-for..."   7 weeks ago         Up 15 seconds       0.0.0.0:8260->8260/tcp   temp_hello-client_1
+b9c132efbfaf        10.20.26.230:5000/wlin/hello-service:0.0.1-SNAPSHOT   "/bin/sh /wait-for..."   7 weeks ago         Up 16 seconds       0.0.0.0:8270->8270/tcp   temp_hello-service_1
+96ee586afd18        10.20.26.230:5000/wlin/config-server:0.0.1-SNAPSHOT   "/bin/sh /wait-for..."   7 weeks ago         Up 16 seconds       0.0.0.0:8210->8210/tcp   temp_config-server_1
+ee1e8011a9ed        10.20.26.230:5000/wlin/eureka-server:0.0.1-SNAPSHOT   "java -Djava.secur..."   7 weeks ago         Up 17 seconds       0.0.0.0:8280->8280/tcp   temp_eurekaServer_1
+3b29b82a169a        registry:2.5                                          "/entrypoint.sh /e..."   8 weeks ago         Up About an hour    0.0.0.0:5000->5000/tcp   repo
 
 ```
