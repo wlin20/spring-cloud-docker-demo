@@ -1,0 +1,30 @@
+#      直接指定uri
+#spring:
+#  cloud:
+#    config:
+#      label: master
+#      profile: dev
+#      uri: http://localhost:8210/
+#      name: feign-hystrix-config
+
+# 集群注册发现
+spring:
+  cloud:
+    config:
+      label: master
+      profile: dev
+      name: hello-client
+      discovery:
+        enabled: true
+#        对应配置服务的ID
+        service-id: config-server
+#  zipkin:
+#    base-url: http://loclhost:8285
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eurekaServer:8280/eureka
+
+management:
+  security:
+    enabled: false

@@ -1,0 +1,39 @@
+version: "3"
+services:
+  eurekaServer:
+    image: 10.20.26.230:5000/wlin/eureka-server:0.0.1-SNAPSHOT
+    container_name: eurekaServer
+#    networks:
+#      - eureka-net
+    ports:
+      - "8280:8280"
+
+  config-server:    # 高可用eureka注册节点2
+    image: 10.20.26.230:5000/wlin/config-server:0.0.1-SNAPSHOT
+    container_name: config-server
+#    networks:
+#      - eureka-net
+    ports:
+      - "8210:8210"
+    depends_on:
+      - eurekaServer
+    links:
+       - eurekaServer
+  hello-client:    # 高可用eureka注册节点2
+    image: 10.20.26.230:5000/wlin/hello-client:0.0.1-SNAPSHOT
+    volumes:
+      - "./wait-for-it.sh:/wait-for-it.sh"
+#    networks:
+#      - eureka-net
+    command: sh ./wait-for-it.sh -t 0 eurekaServer:8280 -- echo "google is up"
+    ports:
+      - "8260:8260"
+    depends_on:
+      - eurekaServer
+      - config-server
+    links:
+       - eurekaServer
+       - config-server
+#networks:
+#  eureka-net:
+#    driver: overlay

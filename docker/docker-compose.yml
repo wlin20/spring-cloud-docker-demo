@@ -1,0 +1,52 @@
+version: "3"
+services:
+  eurekaServer:
+    image: 10.20.26.230:5000/wlin/eureka-server:0.0.1-SNAPSHOT
+#    networks:
+#      - eureka-net
+    ports:
+      - "8280:8280"
+
+  config-server:    #
+    image: 10.20.26.230:5000/wlin/config-server:0.0.1-SNAPSHOT
+#    networks:
+#      - eureka-net
+    ports:
+      - "8210:8210"
+    user: root
+    volumes:
+      - "./wait-for:/wait-for"
+    entrypoint:  /bin/sh /wait-for -t 30 eurekaServer:8280 -- java -jar /app.jar
+     #["./wait-for-it.sh", "db:5432", "--", "jar","-jar", "app.jar"]
+     # sh /wait-for-it.sh eureka-server:8280 -- jar -jar app.jar
+    depends_on:
+      - eurekaServer
+    links:
+      - eurekaServer
+  hello-service:
+    image: 10.20.26.230:5000/wlin/hello-service:0.0.1-SNAPSHOT
+    ports:
+      - "8270:8270"
+    volumes:
+      - "./wait-for:/wait-for"
+    entrypoint:
+      ["/bin/sh","/wait-for","-t","30","eurekaServer:8280","--","java","-jar","/app.jar"]
+    depends_on:
+      - eurekaServer
+    links:
+      - eurekaServer
+  hello-client:
+    image: 10.20.26.230:5000/wlin/hello-client:0.0.1-SNAPSHOT
+    ports:
+      - "8260:8260"
+    volumes:
+      - "./wait-for:/wait-for"
+    entrypoint:
+      ["/bin/sh","/wait-for","-t","70","config-server:8210","--","java","-jar","/app.jar"]
+    restart: on-failure
+    depends_on:
+      - eurekaServer
+      - config-server
+    links:
+      - eurekaServer
+      - config-server
