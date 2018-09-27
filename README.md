@@ -1,6 +1,5 @@
 ## SpringCloud + Docker 自动构建微服务容器 Demo
 
-### Demo主要特征
 
 - 使用spring cloud 搭建demo,包含一个注册中心、一个配置中心、一个服务提供者、一个服务调用者
 - 使用com.spotify:docker-maven-plugin 插件，package 时自动构建DockerImage,并推送到指定的Docker仓库
