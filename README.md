@@ -21,11 +21,11 @@
 
 ### 使用方式
 
-1.本地必须具有docker环境（用于本地构建镜像），并配置了远程仓库地址。
- - Docker及Docker仓库安装参考 https://blog.csdn.net/u013197629/article/details/82868844
+1.本地必须具有maven环境（用于打包）和docker环境（用于本地构建镜像），并且拥有一个可使用（上传镜像）的docker仓库，本地docker环境需配置好docker仓库地址。
+ - 本地安装Docker及Docker仓库安装可参考 https://blog.csdn.net/u013197629/article/details/82879096
 
  
-2.更改父项目pom里面 的docker 相关properties 信息为本地环境信息。
+2.更改父项目pom里面 的docker仓库相关<properties> 信息为本地环境信息。
 ```
     <properties>
         <docker.registryServerId>230-5000</docker.registryServerId>
@@ -33,7 +33,7 @@
         <docker.registryUrl>http://${docker.registryHost}/v2</docker.registryUrl>
     </properties>
 ```
- - 如果私有仓库必须配置鉴权信息，远程docker仓库账号密码配置方式：在本地maven的settings配置文件里配置对应serverId的鉴权信息
+ - 如果使用的是私有仓库，必须配置鉴权信息。远程docker仓库账号密码配置方式：在本地maven的settings配置文件里配置对应serverId的鉴权信息
  ```
  <server>
      <id>230-5000</id>
@@ -44,9 +44,9 @@
      </configuration>
  </server>
  ```
-3.在父pom里运行package命令，构建所有镜像（同时推送到仓库）
+3.在父pom里运行mvn package命令，构建所有镜像（将同时推送到配置的仓库）
 
-- 正常运行结果（mvn package)日志参考如下：
+- 正常运行结果日志（单个模块) 参考如下：
 ```
 [INFO] Scanning for projects...
 Downloading: http://10.20.26.250:8081/nexus/content/repositories/releases/me/wlin/cloud/spring-cloud-docker/1.0-SNAPSHOT/maven-metadata.xml
@@ -159,18 +159,18 @@ null: null
 ```
 
 
-4.更改docker模块内的docker-compose.yml文件内的images地址为你的构建时推送的docker仓库地址，然后将docker模块（即整个目录，包含yml和wait-for脚本）复制到任意含有docker和docker-compose的环境（并且配置了仓库地址为构建仓库地址）
+4.更改docker模块内的docker-compose.yml文件内的images地址为你的构建时推送的docker仓库地址（包含tag），然后将docker模块（即项目内的整个docker目录，包含yml和wait-for脚本）复制到任意含有docker和docker-compose的环境（需配置了构建时指定的仓库地址，如果是私有仓库，还需注意权限问题），如果本地环境符合，可以直接在项目docker路径内运行。
  - docker-compose 安装官方文档：https://docs.docker.com/compose/install/#prerequisites
 
-5.在docker-compose.yml所在目录，运行docker-compose up 或 docker-compose up -d 命令启动所有容器
+5.在复制的docker-compose.yml所在目录，运行docker-compose up （可以看到所有启动日志）或 docker-compose up -d 命令启动所有容器。
 ```
-[root@server temp]# docker-compose up -d 
+[root@server ~]# docker-compose up -d 
 Starting temp_eurekaServer_1 ... done
 Starting temp_hello-service_1 ... done
 Starting temp_config-server_1 ... done
 Starting temp_hello-client_1  ... done
 
-[root@server temp]# docker ps
+[root@server ~]# docker ps
 CONTAINER ID        IMAGE                                                 COMMAND                  CREATED             STATUS              PORTS                    NAMES
 0885ce551787        10.20.26.230:5000/wlin/hello-client:0.0.1-SNAPSHOT    "/bin/sh /wait-for..."   7 weeks ago         Up 15 seconds       0.0.0.0:8260->8260/tcp   temp_hello-client_1
 b9c132efbfaf        10.20.26.230:5000/wlin/hello-service:0.0.1-SNAPSHOT   "/bin/sh /wait-for..."   7 weeks ago         Up 16 seconds       0.0.0.0:8270->8270/tcp   temp_hello-service_1
@@ -178,4 +178,9 @@ b9c132efbfaf        10.20.26.230:5000/wlin/hello-service:0.0.1-SNAPSHOT   "/bin/
 ee1e8011a9ed        10.20.26.230:5000/wlin/eureka-server:0.0.1-SNAPSHOT   "java -Djava.secur..."   7 weeks ago         Up 17 seconds       0.0.0.0:8280->8280/tcp   temp_eurekaServer_1
 3b29b82a169a        registry:2.5                                          "/entrypoint.sh /e..."   8 weeks ago         Up About an hour    0.0.0.0:5000->5000/tcp   repo
 
+```
+6.使用本地浏览器或者http工具访问client地址： 127.0.0.1:8260/client/hello?name=tom
+```
+[root@server ~]# curl 127.0.0.1:8260/client/hello?name=tom
+hi,tom.I'm hello-service from the port 8270
 ```
